@@ -8,7 +8,7 @@ In this repository, I put my implementations for various things in Rust.
 
 Here is the list:
 
-  - Binary Tree (binary_tree.rs)
+  - Binary Tree (binary_tree/binary_tree.rs)
   - ...
 
 2. How to run?

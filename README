@@ -1,0 +1,27 @@
+Things in Rust
+==============
+
+In this repository, I put my implementations for various things in Rust.
+
+1. What included?
+----------------
+
+Here is the list:
+
+  - Binary Tree (binary_tree.rs)
+  - ...
+
+2. How to run?
+--------------
+
+The codes can be compiled with `rustc`:
+
+  $ rustc <source-file> -o <output>
+
+For example:
+
+  $ rustc binary_tree.rs -o binary_tree
+
+Then you can run the output binary file:
+
+  $ ./binary_tree

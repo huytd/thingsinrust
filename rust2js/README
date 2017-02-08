@@ -1,0 +1,50 @@
+RUST TO JAVASCRIPT
+==================
+
+This is an example to show how we can write programs in Rust and compile to JavaScript.
+
+------------------------------------------------------------------
+INSTALLATION
+
+Here is the detailed instruction: https://users.rust-lang.org/t/compiling-to-the-web-with-rust-and-emscripten/7627
+
+* Step 1: Install Rust nightly version.
+
+  $ curl -L https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+  $ source ~/.cargo/env
+  $ rustup target add asmjs-unknown-emscripten
+  $ rustup target add wasm32-unknown-emscripten
+
+* Step 2: Install Emscripten
+
+  $ curl -O https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
+  $ tar -xzf emsdk-portable.tar.gz
+  $ source emsdk_portable/emsdk_env.sh
+  $ emsdk update
+  $ emsdk install sdk-incoming-64bit
+  $ emsdk activate sdk-incoming-64bit
+
+* Step 3: You're done!
+
+------------------------------------------------------------------
+COMPILING RUST TO JAVASCRIPT
+
+Now you can use `rustc` to compile a Rust application to JavaScript. Let's try
+with this simple program:
+
+  fn main() {
+    println!("Hello from Rust!!!");
+  }
+
+Compile to `asm.js`:
+
+  $ rustc --target=asmjs-unknown-emscripten main.rs
+
+Or compile to `WASM`:
+
+  $ rustc --target=wasm32-unknown-emscripten main.rs
+
+The output is a compiled JavaScript file which you can run:
+
+  $ node main.js
+  $ Hello from Rust!!!

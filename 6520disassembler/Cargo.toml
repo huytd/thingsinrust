@@ -1,0 +1,6 @@
+[package]
+name = "emu"
+version = "0.1.0"
+authors = ["Huy Tran <huydt@careskore.com>"]
+
+[dependencies]

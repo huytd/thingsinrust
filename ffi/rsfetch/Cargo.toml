@@ -1,0 +1,13 @@
+[package]
+name = "rsfetch"
+version = "0.1.0"
+authors = ["Huy Tran <kingbazoka@gmail.com>"]
+
+[dependencies]
+libc = "*"
+hyper = "*"
+hyper-native-tls = "*"
+
+[lib]
+name = "rsfetch"
+crate-type = ["dylib"]

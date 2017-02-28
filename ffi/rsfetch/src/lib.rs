@@ -19,14 +19,16 @@ fn print_type_of<T>(_: &T) {
 }
 
 #[no_mangle]
-pub extern fn tf(urls: *mut Vec<*mut c_char>, len: i32) -> *mut c_char {
+pub extern fn tf(urls: *mut *mut c_char, len: i32) -> *mut c_char {
     let urls = unsafe { 
         slice::from_raw_parts(urls, len as usize)
     };
     for url in urls {
         print_type_of(url);
-
-        println!("{:?}", url);
+        let s = unsafe {
+            CStr::from_ptr(*url)
+        };
+        println!("{:?}", s);
     }
     let s = CString::new("Hello").unwrap();
     return s.into_raw();

@@ -5,12 +5,15 @@ const array = require('ref-array');
 let StringArray = array('string');
 
 let lib = ffi.Library('./rsfetch/target/debug/librsfetch.dylib', {
-  'tf': ['string', [StringArray, 'int']]
+  'fetch_array': ['string', [StringArray, 'int']],
 });
 
 let urls = new StringArray([
-    "Hello",
-    "World"
+    "http://google.com",
+    "https://huytd.github.io/404.md"
 ]);
 
-console.log(lib.tf(urls, urls.length));
+//let result = lib.tf(urls, urls.length);
+let result = lib.fetch_array(urls, urls.length);
+
+console.log(result);

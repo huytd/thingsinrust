@@ -1,7 +1,8 @@
-#![feature(core_intrinsics)]
 extern crate libc;
 extern crate hyper;
 extern crate hyper_native_tls;
+#[macro_use]
+extern crate serde_json;
 
 use libc::c_char;
 use std::slice;
@@ -14,60 +15,85 @@ use hyper::Client;
 use hyper::net::HttpsConnector;
 use hyper_native_tls::NativeTlsClient;
 
-fn print_type_of<T>(_: &T) {
-    println!("{}", unsafe { std::intrinsics::type_name::<T>() });
-}
-
 #[no_mangle]
-pub extern fn tf(urls: *mut *mut c_char, len: i32) -> *mut c_char {
+pub extern fn tf(urls: *const *const c_char, len: i32) -> *const c_char {
     let urls = unsafe { 
         slice::from_raw_parts(urls, len as usize)
     };
     for url in urls {
-        print_type_of(url);
-        let s = unsafe {
+        let url = unsafe {
             CStr::from_ptr(*url)
         };
-        println!("{:?}", s);
+        println!("{:?}", url);
     }
-    let s = CString::new("Hello").unwrap();
-    return s.into_raw();
+    let s = CString::new("[\"Hello World\", \"Hello Again\"]").unwrap().into_raw();
+    return s;
 }
 
 #[no_mangle]
-pub extern fn fetch(urls: *mut Vec<&'static str>, len: i32) -> *mut Vec<String> {
+pub extern fn fetch_array(urls: *const *const c_char, len: i32) -> *const c_char {
+    let urls = unsafe { 
+        slice::from_raw_parts(urls, len as usize)
+    };
+    let len = urls.len();
+
     let (tx, rx) = mpsc::channel();
 
-    let urls = unsafe { 
-        Vec::from_raw_parts(urls, len as usize, len as usize) 
-    };
+    for url in urls {
+        let url = unsafe {
+            CStr::from_ptr(*url)
+        }.to_str()?;
+        println!("Now processing: {}", url);
+        let tx = tx.clone();
 
-    for vec_urls in urls {
-        for url in vec_urls {
-            println!("Now processing: {}", url);
-            let tx = tx.clone();
+        thread::spawn(move || {
+            let ssl = NativeTlsClient::new().unwrap();
+            let connector = HttpsConnector::new(ssl);
+            let client = Client::with_connector(connector);
+            let mut res = client.get(url).send().unwrap();
+            let mut result = String::new();
+            res.read_to_string(&mut result);
 
-            thread::spawn(move || {
-                let ssl = NativeTlsClient::new().unwrap();
-                let connector = HttpsConnector::new(ssl);
-                let client = Client::with_connector(connector);
-                let mut res = client.get(url).send().unwrap();
-                let mut result = String::new();
-                res.read_to_string(&mut result);
-
-                tx.send(result).unwrap();
-            });
-        }
+            tx.send(result).unwrap();
+        });
     }
 
     let mut result: Vec<String> = vec![];
     for _ in 0..len {
         result.push(rx.recv().unwrap());
     }
-    return Box::into_raw(Box::new(result));
+    return CString::new(json!(result).to_string()).unwrap().into_raw();
 }
 
-//#[test]
+fn fetch(urls: Vec<*const c_char>) -> Vec<String> {
+    let (tx, rx) = mpsc::channel();
+
+    let len = urls.len();
+
+    for url in urls {
+        println!("Now processing: {}", url);
+        let tx = tx.clone();
+
+        thread::spawn(move || {
+            let ssl = NativeTlsClient::new().unwrap();
+            let connector = HttpsConnector::new(ssl);
+            let client = Client::with_connector(connector);
+            let mut res = client.get(url).send().unwrap();
+            let mut result = String::new();
+            res.read_to_string(&mut result);
+
+            tx.send(result).unwrap();
+        });
+    }
+
+    let mut result: Vec<String> = vec![];
+    for _ in 0..len {
+        result.push(rx.recv().unwrap());
+    }
+    return result;
+}
+
+#[test]
 fn test() {
     let inputs = vec![
           "https://gist.githubusercontent.com/huytd/5b80126b3163c5b2a599db5448d40521/raw/4c6a7cc8bbc717287e52edd0d1d0114ae5bb1a1c/download.txt",
@@ -76,7 +102,7 @@ fn test() {
           "https://gist.githubusercontent.com/huytd/5b80126b3163c5b2a599db5448d40521/raw/4c6a7cc8bbc717287e52edd0d1d0114ae5bb1a1c/download.txt",
           "https://gist.githubusercontent.com/huytd/5b80126b3163c5b2a599db5448d40521/raw/4c6a7cc8bbc717287e52edd0d1d0114ae5bb1a1c/download.txt",
     ];
-    let result = fetch(Box::into_raw(Box::new(inputs)), 5);
+    let result = fetch(inputs);
     println!("{:?}", result);
 }
 

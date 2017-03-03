@@ -5,6 +5,7 @@ authors = ["Huy Tran <kingbazoka@gmail.com>"]
 
 [dependencies]
 libc = "*"
+serde_json = "*"
 hyper = "*"
 hyper-native-tls = "*"
 

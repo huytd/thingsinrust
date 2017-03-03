@@ -16,5 +16,6 @@ let urls = new StringArray([
 
 //let result = lib.tf(urls, urls.length);
 let result = lib.tf(urls, urls.length);
+result.length = 2;
 
 console.log(result);

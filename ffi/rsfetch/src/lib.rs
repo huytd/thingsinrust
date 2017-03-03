@@ -30,7 +30,9 @@ pub extern fn tf(urls: *const *const c_char, len: i32) -> *const *mut c_char {
         CString::new("Nice").unwrap().into_raw(),
         CString::new("Yo").unwrap().into_raw(),
     ];
-    return s.as_ptr();
+    let r = s.as_ptr();
+    std::mem::forget(s);
+    return r;
 }
 /*
 #[no_mangle]

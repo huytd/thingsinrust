@@ -16,7 +16,7 @@ use hyper::net::HttpsConnector;
 use hyper_native_tls::NativeTlsClient;
 
 #[no_mangle]
-pub extern fn tf(urls: *const *const c_char, len: i32) -> *const c_char {
+pub extern fn tf(urls: *const *const c_char, len: i32) -> *const *mut c_char {
     let urls = unsafe { 
         slice::from_raw_parts(urls, len as usize)
     };
@@ -26,10 +26,13 @@ pub extern fn tf(urls: *const *const c_char, len: i32) -> *const c_char {
         };
         println!("{:?}", url);
     }
-    let s = CString::new("[\"Hello World\", \"Hello Again\"]").unwrap().into_raw();
-    return s;
+    let mut s = vec![
+        CString::new("Nice").unwrap().into_raw(),
+        CString::new("Yo").unwrap().into_raw(),
+    ];
+    return s.as_ptr();
 }
-
+/*
 #[no_mangle]
 pub extern fn fetch_array(urls: *const *const c_char, len: i32) -> *const c_char {
     let urls = unsafe { 
@@ -106,4 +109,4 @@ fn test() {
     println!("{:?}", result);
 }
 
-
+*/

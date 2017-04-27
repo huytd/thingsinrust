@@ -5,17 +5,13 @@ const array = require('ref-array');
 let StringArray = array('string');
 
 let lib = ffi.Library('./rsfetch/target/debug/librsfetch.dylib', {
-  'tf': [StringArray, [StringArray, 'int']],
+  'fetch_array': [StringArray, [StringArray, 'int']],
 });
 
-let urls = new StringArray([
-    "http://google.com",
-    "http://google.com",
-    "http://google.com",
-]);
+let urlArray = Array(1000).fill('http://www.loremipsum.de/downloads/original.txt');
+console.log('Jobs: ', urlArray.length);
 
-//let result = lib.tf(urls, urls.length);
-let result = lib.tf(urls, urls.length);
-result.length = 2;
+let urls = new StringArray(urlArray);
 
-console.log(result);
+let result = lib.fetch_array(urls, urls.length);
+result.length = urlArray.length;

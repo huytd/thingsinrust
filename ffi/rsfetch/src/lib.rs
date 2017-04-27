@@ -1,9 +1,6 @@
 extern crate libc;
 extern crate hyper;
 extern crate hyper_native_tls;
-#[macro_use]
-extern crate serde_json;
-
 use libc::c_char;
 use std::slice;
 use std::ffi::CString;
@@ -34,9 +31,9 @@ pub extern fn tf(urls: *const *const c_char, len: i32) -> *const *mut c_char {
     std::mem::forget(s);
     return r;
 }
-/*
+
 #[no_mangle]
-pub extern fn fetch_array(urls: *const *const c_char, len: i32) -> *const c_char {
+pub extern fn fetch_array(urls: *const *const c_char, len: i32) -> *const *mut c_char {
     let urls = unsafe { 
         slice::from_raw_parts(urls, len as usize)
     };
@@ -47,8 +44,7 @@ pub extern fn fetch_array(urls: *const *const c_char, len: i32) -> *const c_char
     for url in urls {
         let url = unsafe {
             CStr::from_ptr(*url)
-        }.to_str()?;
-        println!("Now processing: {}", url);
+        }.to_str().unwrap();
         let tx = tx.clone();
 
         thread::spawn(move || {
@@ -58,19 +54,23 @@ pub extern fn fetch_array(urls: *const *const c_char, len: i32) -> *const c_char
             let mut res = client.get(url).send().unwrap();
             let mut result = String::new();
             res.read_to_string(&mut result);
-
             tx.send(result).unwrap();
         });
     }
 
-    let mut result: Vec<String> = vec![];
+    let mut result = vec![];
     for _ in 0..len {
-        result.push(rx.recv().unwrap());
+        let s = rx.recv().unwrap();
+        result.push(
+            CString::new(s).unwrap().into_raw()
+        );
     }
-    return CString::new(json!(result).to_string()).unwrap().into_raw();
+    let r = result.as_ptr();
+    std::mem::forget(result);
+    return r;
 }
 
-fn fetch(urls: Vec<*const c_char>) -> Vec<String> {
+/*fn fetch(urls: Vec<*const c_char>) -> Vec<*const c_char> {
     let (tx, rx) = mpsc::channel();
 
     let len = urls.len();
@@ -109,6 +109,4 @@ fn test() {
     ];
     let result = fetch(inputs);
     println!("{:?}", result);
-}
-
-*/
+}*/
